@@ -17,7 +17,7 @@ def export_books_to_json (file_name):
     with open(file_name, 'w') as file:
         file.write('[')
         for i, document in enumerate(cursor, 1):
-            file.write(dumps(document,indent = 4))
+            file.write(dumps(document,indent = 4))  
             if i != type_documents_count:
                 file.write(',')
         file.write(']')
@@ -219,7 +219,7 @@ if args.url:
         valid_book_soup = BeautifulSoup(requests.get(args.url).content, "lxml")
         book_id = valid_book_soup.find("input", id = "book_id")['value']
         if book_id != 0:
-            print("URL is valid")
+            print("Will now try start scraping")
             start_scraping(valid_book_soup, args.book, args.author)
     except:
         print("URL is invalid")
