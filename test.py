@@ -13,6 +13,11 @@ class TestStringMethods(unittest.TestCase):
         self.book = main.SoupToJSON(book_soup, author_soup)
         pass
 
+    # Returns True if the url is correct.
+    def test_book_url(self):
+        self.assertEqual(self.book.book_info["book_url"], \
+        "https://www.goodreads.com/book/show/3735293-clean-code")
+
     # Returns True if the id is correct.
     def test_book_id(self):
         self.assertEqual(self.book.book_info["book_id"], \
@@ -33,15 +38,15 @@ class TestStringMethods(unittest.TestCase):
         self.assertEqual(self.book.book_info["rating"], \
         "4.40")
 
-    # Returns True if the book rating count is correct.
-    def test_book_rating_count(self):
-        self.assertEqual(self.book.book_info["rating_count"], \
-        "14891")
+    # Returns True if the image url is correct.
+    def test_image_url(self):
+        self.assertEqual(self.book.book_info["image_url"], \
+        "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1436202607l/3735293._SX318_.jpg")
 
-    # Returns True if the book review count is correct.
-    def test_book_review_count(self):
-        self.assertEqual(self.book.book_info["review_count"], \
-        "876")
+    # Returns True if the similar book is correct.
+    def test_similar_books(self):
+        self.assertEqual(self.book.book_info["similar_books"], \
+        "https://www.goodreads.com/book/similar/3779106-clean-code-a-handbook-of-agile-software-craftsmanship-robert-c-martin")
 
     # Returns True if the author name is correct.
     def test_author_name(self):
@@ -57,11 +62,6 @@ class TestStringMethods(unittest.TestCase):
     def test_author_rating(self):
         self.assertEqual(self.book.author_info["rating"], \
         "4.34")
-
-    # Returns True if the author rating count is correct.
-    def test_author_rating_count(self):
-        self.assertEqual(self.book.author_info["rating_count"], \
-        "26988")
 
 if __name__ == '__main__':
     unittest.main()
