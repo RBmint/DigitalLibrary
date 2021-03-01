@@ -1,5 +1,5 @@
 # sp21-cs242-assignment2
-Project description
+**Project description**
 
 This project has 4 parts:
 1. Use BeautifulSoup as a web scraper to gather information from goodreads.com
@@ -10,20 +10,25 @@ This project has 4 parts:
 
 4. Export the database as a JSON file
 
-Motivation
+**Motivation**
+
 CS242 SP21 Assignment 2.0
 
-Code style
+**Code style**
+
 python-standard-style
 python-unit-tests
 
-Features
+**Features**
+
 Clean code and easily runnable.
 Command line interface  
 
-Installation
+**Installation**
+
 No installation needed.
 Running directly in VSCode or any other IDE that supports Python.
 
-Tests
+**Tests**
+
 Run the test in test.py using VSCode
