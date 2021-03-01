@@ -17,16 +17,19 @@ CS242 SP21 Assignment 2.0
 **Code style**
 
 python-standard-style
+
 python-unit-tests
 
 **Features**
 
 Clean code and easily runnable.
+
 Command line interface  
 
 **Installation**
 
 No installation needed.
+
 Running directly in VSCode or any other IDE that supports Python.
 
 **Tests**
