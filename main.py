@@ -106,14 +106,14 @@ if args.book > const.DEFAULT_BOOK_COUNT:
     print("Scrapping until desired book number may take longer than expected.")
 
 if args.url:
-    # try:
+    try:
         url = requests.get(args.url)
         valid_book_soup = BeautifulSoup(url.content, const.HTML)
         book_id = valid_book_soup.find("input", type = "hidden", id = "book_id")['value']
         if book_id != 0:
             print("Will now try start scraping")
             scrape_into_database(valid_book_soup, args.book, args.author)
-    # except:
+    except:
         print("URL is invalid")
 
 if args.exbook:
@@ -121,12 +121,3 @@ if args.exbook:
 
 if args.exauthor:
     export_authors_to_json(args.exauthor)
-
-# FIRSTBOOKURL = input("please enter the URL of first book\n")
-# try:
-#     url = requests.get(FIRSTBOOKURL)
-#     print("URL is valid")
-# except:
-#     print("URL has been automatically set")
-#     #FIRSTBOOKURL = "https://www.goodreads.com/book/show/4099.The_Pragmatic_Programmer"
-#     FIRSTBOOKURL = "https://www.goodreads.com/book/show/3735293-clean-code"

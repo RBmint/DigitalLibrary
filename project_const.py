@@ -12,3 +12,4 @@ const.LIMIT = 40
 const.DEFAULT_AUTHOR_COUNT = 50
 const.DEFAULT_BOOK_COUNT = 200
 const.HTML = "html.parser"
+const.FIRSTBOOKURL = "https://www.goodreads.com/book/show/3735293-clean-code"
