@@ -1,7 +1,7 @@
 """ This file has the functions of import/export JSON file to/from mongoDB"""
 import json
-from pymongo import MongoClient #pylint: disable=E0401 
-from bson.json_util import dumps #pylint: disable=E0401 
+from pymongo import MongoClient
+from bson.json_util import dumps
 from project_const import const
 
 def export_books_to_json (file_name):

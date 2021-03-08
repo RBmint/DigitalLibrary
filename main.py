@@ -1,8 +1,11 @@
 """ This runs a web scraper and can import/export JSON file to/from mongoDB"""
 import argparse
+import ast
+from pprint import pprint
 import requests
-from bs4 import BeautifulSoup #pylint: disable=E0401 
-from pymongo import MongoClient #pylint: disable=E0401 
+
+from bs4 import BeautifulSoup
+from pymongo import MongoClient
 from scrap_from_soup import ScrapFromSoup
 from project_const import const
 from read_write import export_authors_to_json,export_books_to_json,\
@@ -51,7 +54,6 @@ def scrape_into_database(book_soup, book_count, author_count):
                 book = ScrapFromSoup(book_soup, author_soup)
             except:
                 count += 1
-                print("skipped")
                 continue
             # Check if book/author is going to be a duplicate
             if book.book_info['title'] not in book_dic:
@@ -121,3 +123,96 @@ if args.exbook:
 
 if args.exauthor:
     export_authors_to_json(args.exauthor)
+
+
+
+def check_field_name(field_name_in):
+    """check if the field name is valid"""
+    field_name = field_name_in
+    if book_collection.find({field_name:{"$exists": True}}).count() == 0:
+        raise Exception("Field " + field_name + " does not exist.")
+
+def check_collection_name(collection_name_in):
+    """check if the collection name is valid"""
+    collection_name = collection_name_in
+    if collection_name not in database.list_collection_names():
+        raise Exception("Collection " + collection_name + " does not exist.")
+
+def single_operation_handler(user_input_in):
+    """Handle situation for NOT and comparison operators"""
+    if "\"" in user_input_in:
+        result = user_input_in.split(":", maxsplit = 2)
+        value = result[1].split("\"")[1].strip()
+        field = split_by_dot(result)
+        if "not" in user_input:
+            user_query = {field : {"$not" : value}}
+        elif ">" in user_input:
+            user_query = {field : {"$gt" : value}}
+        elif "<" in user_input:
+            user_query = {field : {"$lt" : value}}
+        else:
+            user_query = {field : value}
+        return user_query
+    if "<" in user_input or ">" in user_input:
+        raise Exception("Comparison operator \
+            cannot be used simultaneously with regex expression")
+    result = user_input_in.split(":", maxsplit = 2)
+    value = result[1].strip()
+    if "not" in value:
+        value = value.split("not")[1].strip()
+        field = split_by_dot(result)
+        user_query = {field : {"$not" : {"$regex" : ".*" + value + ".*"}}}
+        return user_query
+    field = split_by_dot(result)
+    user_query = {field : {"$regex" : ".*" + value + ".*"}}
+    return user_query
+
+def split_by_dot(result):
+    """split the field name by the dot"""
+    collection = result[0].split(".")[0]
+    check_collection_name(collection)
+    field = result[0].split(".")[1]
+    check_field_name(field)
+    return field
+
+def logical_operation_handler(operation_type):
+    """handle the operator AND and OR"""
+    first_part = user_input.split(operation_type)[0].strip()
+    second_part = user_input.split(operation_type)[1].strip()
+    first_query = single_operation_handler(first_part)
+    second_query = single_operation_handler(second_part)
+    final_query = ast.literal_eval("{'$" + operation_type + \
+        "':[" + str(first_query) +","+ str(second_query) + "]}")
+    print_result_with_counting(final_query)
+
+def print_result_with_counting(result_in):
+    """pretty print the result of the query"""
+    count = 0
+    for result in book_collection.find(result_in):
+        pprint(result)
+        count += 1
+    print("total count = " , count)
+
+
+# user_input = input("indicate the operator and operation:")
+user_input = 'book.rating: 2'
+client = MongoClient(const.LOCALHOST)
+database = client[const.MYDB]
+book_collection = database[const.BOOKDB]
+author_collection = database[const.AUTHORDB]
+
+if "and" in user_input:
+    logical_operation_handler("and")
+elif "or" in user_input:
+    logical_operation_handler("or")
+else:
+    final_query = single_operation_handler(user_input)
+    print(final_query)
+    print_result_with_counting(final_query)
+
+uq2 = {'book_id': {'$not': {'$gt': '332'}}}
+# uq2 = {"$and":[{'book_id': {'$regex': '.*3.*'}},{'title': {'$regex' : '.*o.*'}}]}
+uq3 = {"$and":[{'book_id': '320'},{'title': 'one'}]}
+uq4 = {'book_id': {'$regex': '.*320.*'}}
+# user_query2 = {"book_id": {"$not" : {"$lt" : "4.0"}}}
+# user_query2 = {"book_id": {"$not" :{"$eq": "320"}}}
