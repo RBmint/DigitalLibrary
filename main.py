@@ -37,6 +37,7 @@ def scrape_into_database(book_soup, book_count, author_count):
     # Create dictionary to check possible duplicates
     book_dic = {}
     author_dic = {}
+    # Use two counter to keep track of the scraping process
     count = 0
     unique_count = 0
     while len(book_dic) < book_count and len(author_dic) < author_count:
@@ -53,6 +54,7 @@ def scrape_into_database(book_soup, book_count, author_count):
             try:
                 book = ScrapFromSoup(book_soup, author_soup)
             except:
+                # Beautifulsoup failed to create on a particular book
                 count += 1
                 continue
             # Check if book/author is going to be a duplicate
@@ -63,11 +65,14 @@ def scrape_into_database(book_soup, book_count, author_count):
                 count += 1
                 print("found ", unique_count, " unique books in ", count, " searches")
             else:
+                # The book scraped is a duplicate
                 count += 1
                 continue
+            # Because every book has a corresponding author, no need to count separately
             if book.author_info['author_id'] not in author_dic:
                 author_collection.insert_one(book.author_info)
                 author_dic[book.author_info['author_id']] = book
+            # Break out of the loop earlier if the desired num is already satisfied
             if len(book_dic) >= book_count or len(author_dic) >= author_count:
                 break
         # Find similar book based on the last book stored in dictionary
@@ -124,12 +129,12 @@ if args.exbook:
 if args.exauthor:
     export_authors_to_json(args.exauthor)
 
-
-
-def check_field_name(field_name_in):
+def check_field_name(collection_name_in, field_name_in):
     """check if the field name is valid"""
     field_name = field_name_in
-    if book_collection.find({field_name:{"$exists": True}}).count() == 0:
+    # because the collection name has already been checked,
+    # we can thus use database[collection] directly
+    if database[collection_name_in].find({field_name:{"$exists": True}}).count() == 0:
         raise Exception("Field " + field_name + " does not exist.")
 
 def check_collection_name(collection_name_in):
@@ -140,10 +145,11 @@ def check_collection_name(collection_name_in):
 
 def single_operation_handler(user_input_in):
     """Handle situation for NOT and comparison operators"""
+    # check if the operator specified the exact search term
     if "\"" in user_input_in:
         result = user_input_in.split(":", maxsplit = 2)
         value = result[1].split("\"")[1].strip()
-        field = split_by_dot(result)
+        collection, field = split_by_dot(result)
         if "not" in user_input:
             user_query = {field : {"$not" : value}}
         elif ">" in user_input:
@@ -152,67 +158,71 @@ def single_operation_handler(user_input_in):
             user_query = {field : {"$lt" : value}}
         else:
             user_query = {field : value}
-        return user_query
+        return collection, user_query
+    # check if there is a comparison operator while there does
+    # not exist an exact search term. This is not allowed.
     if "<" in user_input or ">" in user_input:
         raise Exception("Comparison operator \
             cannot be used simultaneously with regex expression")
     result = user_input_in.split(":", maxsplit = 2)
     value = result[1].strip()
+    # check if there is a NOT operator and deal with the query accordingly
     if "not" in value:
         value = value.split("not")[1].strip()
-        field = split_by_dot(result)
+        collection, field = split_by_dot(result)
         user_query = {field : {"$not" : {"$regex" : ".*" + value + ".*"}}}
-        return user_query
-    field = split_by_dot(result)
+        return collection, user_query
+    # if no special operator at all, the query is simple as below
+    collection, field = split_by_dot(result)
     user_query = {field : {"$regex" : ".*" + value + ".*"}}
-    return user_query
+    return collection, user_query
 
 def split_by_dot(result):
     """split the field name by the dot"""
-    collection = result[0].split(".")[0]
+    # check the collection name first
+    collection = result[0].split(".")[0].strip()
     check_collection_name(collection)
-    field = result[0].split(".")[1]
-    check_field_name(field)
-    return field
+    # check the field in the corresponding collection
+    field = result[0].split(".")[1].strip()
+    check_field_name(collection, field)
+    return collection, field
 
 def logical_operation_handler(operation_type):
     """handle the operator AND and OR"""
+    # split by the operator
     first_part = user_input.split(operation_type)[0].strip()
     second_part = user_input.split(operation_type)[1].strip()
-    first_query = single_operation_handler(first_part)
-    second_query = single_operation_handler(second_part)
-    final_query = ast.literal_eval("{'$" + operation_type + \
+    # handle both part as one single operation
+    collection, first_query = single_operation_handler(first_part)
+    collection, second_query = single_operation_handler(second_part)
+    # link the two operations by the operator into one query
+    final_query = ast.literal_eval("{'$" + operation_type.strip() + \
         "':[" + str(first_query) +","+ str(second_query) + "]}")
-    print_result_with_counting(final_query)
+    print_result_with_counting(collection, final_query)
 
-def print_result_with_counting(result_in):
+def print_result_with_counting(collection, result_in):
     """pretty print the result of the query"""
     count = 0
-    for result in book_collection.find(result_in):
+    # because the collection name has already been checked,
+    # we can thus use database[collection] directly
+    for result in database[collection].find(result_in):
         pprint(result)
         count += 1
     print("total count = " , count)
 
-
-# user_input = input("indicate the operator and operation:")
-user_input = 'book.rating: 2'
+user_input = input("indicate the operator and operation:")
 client = MongoClient(const.LOCALHOST)
 database = client[const.MYDB]
 book_collection = database[const.BOOKDB]
 author_collection = database[const.AUTHORDB]
 
-if "and" in user_input:
-    logical_operation_handler("and")
-elif "or" in user_input:
-    logical_operation_handler("or")
+# added whitespace to make uniformity
+if " and " in user_input:
+    logical_operation_handler(" and ")
+# added whitespace to avoid confusion with "author" which contains "or"
+elif " or " in user_input:
+    logical_operation_handler(" or ")
+# all other operators can only exist in a single operation
 else:
-    final_query = single_operation_handler(user_input)
-    print(final_query)
-    print_result_with_counting(final_query)
-
-uq2 = {'book_id': {'$not': {'$gt': '332'}}}
-# uq2 = {"$and":[{'book_id': {'$regex': '.*3.*'}},{'title': {'$regex' : '.*o.*'}}]}
-uq3 = {"$and":[{'book_id': '320'},{'title': 'one'}]}
-uq4 = {'book_id': {'$regex': '.*320.*'}}
-# user_query2 = {"book_id": {"$not" : {"$lt" : "4.0"}}}
-# user_query2 = {"book_id": {"$not" :{"$eq": "320"}}}
+    collection, final_query = single_operation_handler(user_input)
+    print_result_with_counting(collection, final_query)
