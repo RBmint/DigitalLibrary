@@ -1,5 +1,5 @@
 import unittest
-import main
+from scrap_from_soup import ScrapFromSoup
 import json
 import requests
 from bs4 import BeautifulSoup
@@ -10,7 +10,7 @@ class TestStringMethods(unittest.TestCase):
         book_soup = BeautifulSoup(requests.get(FIRSTBOOKURL).content, "lxml")
         bookAuthorURL = book_soup.find("meta", property = "books:author")['content']
         author_soup = BeautifulSoup(requests.get(bookAuthorURL).content, "lxml")
-        self.book = main.SoupToJSON(book_soup, author_soup)
+        self.book = ScrapFromSoup(book_soup, author_soup)
         pass
 
     # Returns True if the url is correct.

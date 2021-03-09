@@ -79,8 +79,8 @@ def logical_operation_handler(user_input_in, operation_type):
     # link the two operations by the operator into one query
     final_query = ast.literal_eval("{'$" + operation_type.strip() + \
         "':[" + str(first_query) +","+ str(second_query) + "]}")
-    print_result_with_counting(collection, final_query)
-
+    return collection, final_query
+    
 def print_result_with_counting(collection, result_in):
     """pretty print the result of the query"""
     count = 0

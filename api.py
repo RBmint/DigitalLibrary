@@ -6,7 +6,7 @@ from bson.json_util import dumps
 from bs4 import BeautifulSoup
 
 from project_const import const
-from main import single_operation_handler
+from query_parse_and_execution import single_operation_handler
 from scrap_from_soup import scrape_into_database
 
 app = flask.Flask(__name__)
@@ -33,12 +33,12 @@ def api_book_id():
     # Check if an ID was provided as part of the URL.
     # If no ID is provided, display an error in the browser.
     if 'id' in request.args:
-        book_id = int(request.args['id'])
+        book_id = request.args['id']
     else:
         return flask.Response(status=400)
     results = []
     # Modify the user input based on request
-    user_input = "book.book_id:" + "\"" + str(book_id) +"\""
+    user_input = "book.book_id:" + "\"" + book_id +"\""
     # Connect to mongoDB and make the search
     search_and_return(user_input, results)
     return dumps(results)
@@ -49,12 +49,12 @@ def api_author_id():
     # Check if an ID was provided as part of the URL.
     # If no ID is provided, display an error in the browser.
     if 'id' in request.args:
-        author_id = int(request.args['id'])
+        author_id = request.args['id']
     else:
         return flask.Response(status=400)
     results = []
     # Modify the user input based on request
-    user_input = "author.author_id:" + "\"" + str(author_id) +"\""
+    user_input = "author.author_id:" + "\"" + author_id +"\""
     # Connect to mongoDB and make the search
     search_and_return(user_input, results)
     return dumps(results)

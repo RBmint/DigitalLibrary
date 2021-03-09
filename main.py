@@ -9,6 +9,7 @@ from scrap_from_soup import scrape_into_database
 from project_const import const
 from read_write import export_authors_to_json,export_books_to_json,\
     read_from_author_json,read_from_book_json
+from api import api_book_id
 
 parser = argparse.ArgumentParser(description = \
     "scrap book from URL and/or import/export JSON file to/from mongodb")
@@ -23,6 +24,8 @@ parser.add_argument("-eb", "--exbook", type = str, help = \
     "export the book database to JSON file")
 parser.add_argument("-ea", "--exauthor", type = str, help = \
     "export the author database to JSON file")
+parser.add_argument("-g", "--get", type = str, help = "API GET")
+
 args = parser.parse_args()
 
 if args.readbook:
@@ -64,10 +67,14 @@ user_input = input("indicate the operator and operation:")
 
 # added whitespace to make uniformity
 if " and " in user_input:
-    logical_operation_handler(user_input, " and ")
+    collection, final_query = logical_operation_handler(user_input, " and ")
+    print_result_with_counting(collection, final_query)
+
 # added whitespace to avoid confusion with "author" which contains "or"
 elif " or " in user_input:
-    logical_operation_handler(user_input, " or ")
+    collection, final_query = logical_operation_handler(user_input, " or ")
+    print_result_with_counting(collection, final_query)
+
 # all other operators can only exist in a single operation
 else:
     collection, final_query = single_operation_handler(user_input)
