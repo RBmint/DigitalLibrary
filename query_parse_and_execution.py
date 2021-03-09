@@ -1,11 +1,8 @@
-import argparse
+"""this file is the util for query parsing and execution"""
 import ast
-from pprint import pprint
-import requests
 
-from bs4 import BeautifulSoup
+from pprint import pprint
 from pymongo import MongoClient
-from scrap_from_soup import ScrapFromSoup
 from project_const import const
 
 client = MongoClient(const.LOCALHOST)

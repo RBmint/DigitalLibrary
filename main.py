@@ -1,14 +1,11 @@
 """ This runs a web scraper and can import/export JSON file to/from mongoDB"""
 import argparse
-import ast
-from pprint import pprint
 import requests
 
+from bs4 import BeautifulSoup
 from query_parse_and_execution import single_operation_handler,\
     logical_operation_handler, print_result_with_counting
-from bs4 import BeautifulSoup
-from pymongo import MongoClient
-from scrap_from_soup import ScrapFromSoup, scrape_into_database
+from scrap_from_soup import scrape_into_database
 from project_const import const
 from read_write import export_authors_to_json,export_books_to_json,\
     read_from_author_json,read_from_book_json
@@ -67,10 +64,10 @@ user_input = input("indicate the operator and operation:")
 
 # added whitespace to make uniformity
 if " and " in user_input:
-    logical_operation_handler(" and ")
+    logical_operation_handler(user_input, " and ")
 # added whitespace to avoid confusion with "author" which contains "or"
 elif " or " in user_input:
-    logical_operation_handler(" or ")
+    logical_operation_handler(user_input, " or ")
 # all other operators can only exist in a single operation
 else:
     collection, final_query = single_operation_handler(user_input)
