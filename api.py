@@ -1,6 +1,8 @@
 """this file contains functions for api based operations"""
 import flask
 from flask import request
+from flask_cors import CORS
+
 from pymongo import MongoClient
 from bson.json_util import dumps
 from bs4 import BeautifulSoup
@@ -11,6 +13,7 @@ from scrap_from_soup import scrape_into_database
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+CORS(app)
 
 client = MongoClient(const.LOCALHOST)
 database = client[const.MYDB]
