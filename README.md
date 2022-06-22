@@ -1,4 +1,4 @@
-# sp21-cs242-assignment2
+# Digital Library
 **Project description**
 
 This project has 4 parts:
@@ -9,10 +9,6 @@ This project has 4 parts:
 3. Import JSON file into the database
 
 4. Export the database as a JSON file
-
-**Motivation**
-
-CS242 SP21 Assignment 2.0
 
 **Code style**
 
